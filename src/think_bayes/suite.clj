@@ -4,8 +4,9 @@
 
 (defprotocol SuiteProtocol
   (update-hypothesis [this hypothesis])
-  (probability [this hypothesis])
-  (probabilities [this]))
+  (state [this])
+  (probabilities [this])
+  (probability [this hypothesis]))
 
 (defrecord SuiteRecord [hypotheses likelihood state update-state]
   SuiteProtocol
@@ -14,7 +15,12 @@
           updated (into {}
                         (for [[hypo prob] (:hypotheses this)]
                           [hypo (* prob (likelihood (:state this) hypothesis hypo))]))]
-      (assoc this :hypotheses (hist/normalize-pmf updated))))
+      (cond-> this
+        true (assoc :hypotheses (hist/normalize-pmf updated))
+        (and (:state this)
+             (:update-state this)) (assoc :state (update-state (:state this) hypothesis)))))
+  (state [this]
+    (:state this))
   (probability [this hypothesis]
     (get (:hypotheses this) hypothesis))
   (probabilities [this]

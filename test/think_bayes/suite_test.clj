@@ -37,8 +37,19 @@
                      (let [[bag color] selection
                            like (get-in bowls [hypo bag color])]
                        like))
-        mandm (suite/new-suite ["A" "B"] :likelihood likelihood :state hypotheses)
+        update-state (fn [state selection]
+                       ; this is missing one level-- we need to decrement the leaf
+                       ; in each hypothesis
+                       (reduce (fn [state hypo]
+                                 (update-in state (conj (seq selection) hypo) dec))
+                               state
+                               (keys state)))
+        mandm (suite/new-suite ["A" "B"] :likelihood likelihood :state hypotheses :update-state update-state)
         updated-mandm (suite/update-hypothesis mandm [:bag1 :yellow])
         updated-mandm (suite/update-hypothesis updated-mandm [:bag2 :green])]
     (suite/probability updated-mandm "A") => (roughly 0.74074)
-    (suite/probability updated-mandm "B") => (roughly 0.25925)))
+    (suite/probability updated-mandm "B") => (roughly 0.25925)
+    (get-in (suite/state updated-mandm) ["A" :bag1 :yellow]) => 19
+    (get-in (suite/state updated-mandm) ["A" :bag2 :green]) => 19
+    (get-in (suite/state updated-mandm) ["B" :bag1 :yellow]) => 13
+    (get-in (suite/state updated-mandm) ["B" :bag2 :green]) => 9))

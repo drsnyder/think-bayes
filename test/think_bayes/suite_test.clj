@@ -53,3 +53,14 @@
     (get-in (suite/state updated-mandm) ["A" :bag2 :green]) => 19
     (get-in (suite/state updated-mandm) ["B" :bag1 :yellow]) => 13
     (get-in (suite/state updated-mandm) ["B" :bag2 :green]) => 9))
+
+; 3.1
+(facts :dice
+  (let [likelihood (fn [_ selection hypo]
+                     (if (> selection hypo)
+                       0
+                       (/ 1.0 hypo)))
+        dice (suite/new-suite [4 6 8 12 20] :likelihood likelihood)
+        updated-dice (reduce suite/update-hypothesis dice [6 6 8 7 7 5 4])]
+    ; test
+    (clojure.pprint/pprint (suite/probabilities updated-dice))))

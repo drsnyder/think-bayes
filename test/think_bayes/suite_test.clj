@@ -62,5 +62,8 @@
                        (/ 1.0 hypo)))
         dice (suite/new-suite [4 6 8 12 20] :likelihood likelihood)
         updated-dice (reduce suite/update-hypothesis dice [6 6 8 7 7 5 4])]
-    ; test
-    (clojure.pprint/pprint (suite/probabilities updated-dice))))
+    (suite/probability updated-dice 4) => (roughly 0.0000)
+    (suite/probability updated-dice 6) => (roughly 0.0000)
+    (suite/probability updated-dice 8) => (roughly 0.94324)
+    (suite/probability updated-dice 12) => (roughly 0.05520)
+    (suite/probability updated-dice 20) => (roughly 0.001545)))

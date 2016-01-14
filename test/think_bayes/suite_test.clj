@@ -1,6 +1,8 @@
 (ns think-bayes.suite-test
   (:use [midje.sweet])
-  (:require (think-bayes [suite :as suite])))
+  (:require (think-bayes [suite :as suite])
+            (think-stats [hist :as hist])
+            [think-bayes.util.power :refer :all]))
 
 (facts :monty
   (let [monty (suite/new-suite ["A" "B" "C"]
@@ -67,3 +69,17 @@
     (suite/probability updated-dice 8) => (roughly 0.94324)
     (suite/probability updated-dice 12) => (roughly 0.05520)
     (suite/probability updated-dice 20) => (roughly 0.001545)))
+
+(facts :locomotive
+  (let [likelihood (fn [_ selection hypo]
+                     (if (> selection hypo) ; same as dice above
+                       0
+                       (/ 1.0 hypo)))
+        locomotive (suite/new-suite (range 1 1001) :likelihood likelihood)
+        locomotive (suite/update-hypothesis locomotive 60)
+        locomotive-500 (-> (suite/new-suite (power-pmf 1 501 1.0) :likelihood likelihood)
+                             (suite/update-hypothesis 30)
+                             (suite/update-hypothesis 60)
+                             (suite/update-hypothesis 90))]
+    (Math/round (hist/hist->mean (suite/probabilities locomotive))) => 333
+    (Math/round (hist/hist->mean (suite/probabilities locomotive-500))) => 131))
